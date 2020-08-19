@@ -17,15 +17,21 @@ export levenshteinDistance
 export ldn
 
 include("phmm.jl")
-include("viterbi.jl")
-include("forward.jl")
-include("backward.jl")
-
-
 export Phmm
+
+include("viterbi.jl")
 export viterbi
+
+include("forward.jl")
 export forward
+
+include("backward.jl")
 export backward
+
+include("baumWelch.jl")
+export baumWelch
+export phmmExpectations
+export Phmm
 
 
 end
