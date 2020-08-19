@@ -64,7 +64,7 @@ function Phmm(e::phmmExpectations)
 
 
     lp = Dict{Tuple{Char, Char}, Float64}()
-    for (i,s1) in enumerate(e.alphabet), (j, s2) in enumerate(levP.alphabet)
+    for (i,s1) in enumerate(e.alphabet), (j, s2) in enumerate(e.alphabet)
         lp[s1, s2] = log(e.p[i,j] + e.p[j,i]) - log(sum(e.p)) - log(2)
     end
     lp = DefaultDict(-Inf, lp)
