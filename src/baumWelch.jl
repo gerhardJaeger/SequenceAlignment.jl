@@ -131,7 +131,7 @@ function baumWelch(w1::String, w2::String, levP::Phmm)
             expectedQ[i2[j-1]] += sum(ev)
         end
     end
-    phmmExpectations(
+    ll, phmmExpectations(
         levP.alphabet,
         expectedAlpha,
         expectedTau,
