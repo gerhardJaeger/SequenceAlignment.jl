@@ -70,7 +70,7 @@ function Phmm(e::phmmExpectations)
     lp = DefaultDict(-Inf, lp)
 
     lq = Dict{Char, Float64}()
-    for (i, s) in enumerate(levP.alphabet)
+    for (i, s) in enumerate(e.alphabet)
         lq[s] = log(e.q[i]) - log(sum(e.q))
     end
     lq = DefaultDict(-Inf, lq)
