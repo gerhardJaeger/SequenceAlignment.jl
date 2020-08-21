@@ -5,9 +5,9 @@ mutable struct Phmm # all probabilities are log-transformed
     lt::Matrix{Float64} # transition matrix between M, X and Y
     lp::DefaultDict{Tuple{Char,Char},Float64,Float64} # emission probs in state M
     lq::DefaultDict{Char,Float64,Float64} # emission probs in states X, Y
-    Phmm(alphabet, α, τ, lt, lp, lq) =
-        assert_phmm(alphabet, α, τ, lt, lp, lq) &&
-        new(alphabet, α, τ, lt, lp, lq)
+    # Phmm(alphabet, α, τ, lt, lp, lq) =
+    #     assert_phmm(alphabet, α, τ, lt, lp, lq) &&
+    #     new(alphabet, α, τ, lt, lp, lq)
 end
 
 import LinearAlgebra:issymmetric

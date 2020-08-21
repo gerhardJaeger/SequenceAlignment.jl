@@ -1,6 +1,6 @@
 function backward!(dp::Array{Float64,3}, w1::String, w2::String, p::Phmm)
     n, m = length(w1), length(w2)
-    fill!(dp, -Inf)
+    fill!(dp, Float64(-Inf))
     dp[n+1, m+1, :] = p.τ
     for j = (m+1):-1:1, i = (n+1):-1:1
         for s = 1:3

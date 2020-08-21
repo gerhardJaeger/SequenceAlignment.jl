@@ -27,17 +27,17 @@ function phmmExpectations(ph::Phmm, count::Float64=1.0)
     nSymbols = length(ph.alphabet)
     phmmExpectations(
         ph.alphabet,
-        ones(3) .* count,
-        ones(3) .* count,
-        ones(nSymbols, nSymbols) .* count,
-        ones(nSymbols) .* count,
-        ones(3,3) .* count,
+        ones(Float64, 3) .* count,
+        ones(Float64, 3) .* count,
+        ones(Float64, nSymbols, nSymbols) .* count,
+        ones(Float64, nSymbols) .* count,
+        ones(Float64, 3,3) .* count,
     )
 end
 
 
 function Phmm(e::phmmExpectations)
-    transitions = zeros(5,5)
+    transitions = zeros(Float64, 5,5)
     transitions[1,2:4] = e.α
     transitions[2:4,2:4] = e.tm
     transitions[2:4,5] = e.τ
@@ -55,8 +55,6 @@ function Phmm(e::phmmExpectations)
     transitions[3, 2] =
         transitions[4, 2] = (transitions[3, 2] + transitions[4, 2]) / 2
 
-
-
     tn = mapslices(x -> x ./ sum(x), transitions, dims=2)
     α = log.(tn[1,2:4])
     τ = log.(tn[2:4,5])
@@ -67,30 +65,30 @@ function Phmm(e::phmmExpectations)
     for (i,s1) in enumerate(e.alphabet), (j, s2) in enumerate(e.alphabet)
         lp[s1, s2] = log(e.p[i,j] + e.p[j,i]) - log(sum(e.p)) - log(2)
     end
-    lp = DefaultDict(-Inf, lp)
+    lp = DefaultDict(Float64(-Inf), lp)
 
     lq = Dict{Char, Float64}()
     for (i, s) in enumerate(e.alphabet)
         lq[s] = log(e.q[i]) - log(sum(e.q))
     end
-    lq = DefaultDict(-Inf, lq)
+    lq = DefaultDict(Float64(-Inf), lq)
     Phmm(e.alphabet, α, τ, lt, lp, lq)
 end
 
 function baumWelch(w1::String, w2::String, levP::Phmm)
     n, m = length(w1), length(w2)
-    fdp = zeros(n + 1, m + 1, 3)
-    bdp = zeros(n + 1, m + 1, 3)
+    fdp = zeros(Float64, n + 1, m + 1, 3)
+    bdp = zeros(Float64, n + 1, m + 1, 3)
     i1 = Vector{Int}(indexin(w1, levP.alphabet))
     i2 = Vector{Int}(indexin(w2, levP.alphabet))
     ll = SequenceAlignment.forward!(fdp, w1, w2, levP)
     SequenceAlignment.backward!(bdp, w1, w2, levP)
     nSymbols = length(levP.alphabet)
-    expectedP = zeros(nSymbols, nSymbols)
-    expectedQ = zeros(nSymbols)
+    expectedP = zeros(Float64, nSymbols, nSymbols)
+    expectedQ = zeros(Float64, nSymbols)
     expectedT = zeros(Float64, 3, 3)
-    expectedAlpha = zeros(3)
-    expectedTau = zeros(3)
+    expectedAlpha = zeros(Float64, 3)
+    expectedTau = zeros(Float64, 3)
     ev1 = exp(levP.α[1] + bdp[2, 2, 1] + levP.lp[w1[1], w2[1]] - ll)
     expectedAlpha[1] += ev1
     expectedP[i1[1], i2[1]] += ev1
@@ -110,7 +108,6 @@ function baumWelch(w1::String, w2::String, levP::Phmm)
                 )
             expectedT[:, 1] += ev
             expectedP[i1[i-1], i2[j-1]] += sum(ev)
-
         end
         if i > 1 && (i, j) != (2, 1)
             ev =
