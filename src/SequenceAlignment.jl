@@ -1,4 +1,4 @@
-__precompile__(true)
+#__precompile__(true)
 
 
 module SequenceAlignment
@@ -8,6 +8,7 @@ using Distributions
 using LinearAlgebra
 using StatsFuns
 using DataStructures
+using JSON
 
 
 include("levenshtein.jl")
@@ -32,6 +33,7 @@ include("baumWelch.jl")
 export baumWelch
 export phmmExpectations
 export Phmm
+export print
 
 
 end
