@@ -124,3 +124,57 @@ function isapprox(a::Phmm, b::Phmm)
     end
     return true
 end
+
+
+
+function randomPhmm(sounds::Vector{Char})
+    nSymbols = length(sounds)
+    pr = reshape(rand(Dirichlet(nSymbols^2, 1)), (nSymbols, nSymbols))
+    pr = (pr .+ pr') / 2
+    qr = rand(Dirichlet(nSymbols, 1))
+    lp = DefaultDict(-Inf, Dict{Tuple{Char,Char},Float64}())
+    lq = DefaultDict(-Inf, Dict{Char,Float64}())
+    for (i, s1) in enumerate(sounds), (j, s2) in enumerate(sounds)
+        lp[s1, s2] = log(pr[i, j])
+    end
+    for (i, s) in enumerate(sounds)
+        lq[s] = log(qr[i])
+    end
+    α = rand(Dirichlet(3, 1))
+    α[2] = α[3] = (α[2] + α[3]) / 2
+    m = rand(Dirichlet(4, 1))
+    m[2] = m[3] = (m[2] + m[3]) / 2
+    xy = rand(Dirichlet(3, 1))
+    x = zeros(Float64, 4)
+    x[[1,2,4]] = xy
+    y = x[[1, 3, 2, 4]]
+    τ = [m[4], x[4], y[4]]
+    tm = permutedims([m x y])[:, 1:3]
+    Phmm(sounds, log.(α), log.(τ), log.(tm), lp, lq)
+end
+
+function uniformPhmm(sounds::Vector{Char})
+    nSymbols = length(sounds)
+    pr = reshape(ones(Float64, nSymbols^2) ./ nSymbols^2, (nSymbols, nSymbols))
+    pr = (pr .+ pr') / 2
+    qr = ones(Float64, nSymbols) ./ nSymbols
+    lp = DefaultDict(Float64(-Inf), Dict{Tuple{Char,Char},Float64}())
+    lq = DefaultDict(Float64(-Inf), Dict{Char,Float64}())
+    for (i, s1) in enumerate(sounds), (j, s2) in enumerate(sounds)
+        lp[s1, s2] = log(pr[i, j])
+    end
+    for (i, s) in enumerate(sounds)
+        lq[s] = log(qr[i])
+    end
+    α = ones(Float64, 3) ./ 3
+    α[2] = α[3] = (α[2] + α[3]) / 2
+    m = ones(Float64, 4) ./ 4
+    m[2] = m[3] = (m[2] + m[3]) / 2
+    xy = rand(Dirichlet(3, 1))
+    x = zeros(Float64, 4) ./ 4
+    x[[1,2,4]] = xy
+    y = x[[1, 3, 2, 4]]
+    τ = [m[4], x[4], y[4]]
+    tm = permutedims([m x y])[:, 1:3]
+    Phmm(sounds, log.(α), log.(τ), log.(tm), lp, lq)
+end
