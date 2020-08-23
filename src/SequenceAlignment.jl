@@ -34,6 +34,10 @@ export baumWelch
 export phmmExpectations
 export Phmm
 export print
+export read
+export write
+export randomPhmm
+export uniformPhmm
 
 
 end
