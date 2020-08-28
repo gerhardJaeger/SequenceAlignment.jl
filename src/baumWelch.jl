@@ -31,7 +31,11 @@ function phmmExpectations(ph::Phmm, count::Float64=1.0)
         ones(Float64, 3) .* count,
         ones(Float64, nSymbols, nSymbols) .* count,
         ones(Float64, nSymbols) .* count,
-        ones(Float64, 3,3) .* count,
+        [
+            1. 1. 1.
+            1. 1. 0.
+            1. 0. 1
+        ] .* count,
     )
 end
 

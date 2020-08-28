@@ -9,6 +9,7 @@ using LinearAlgebra
 using StatsFuns
 using DataStructures
 using JSON
+using Memoize
 
 
 include("levenshtein.jl")
@@ -25,6 +26,7 @@ export viterbi
 
 include("forward.jl")
 export forward
+export forward0
 
 include("backward.jl")
 export backward
@@ -38,6 +40,11 @@ export read
 export write
 export randomPhmm
 export uniformPhmm
+
+include("needlemanWunsch.jl")
+export NW
+export nw
+export nwAlign
 
 
 end
