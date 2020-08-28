@@ -104,6 +104,7 @@ function nw!(
     @argcheck all([s ∈ p.alphabet for s in w1])
     @argcheck all([s ∈ p.alphabet for s in w2])
     n, m = length(w1), length(w2)
+    @argcheck size(dp) <= (n + 1, m + 1, 3)
     fill!(dp, -Inf)
 
     dp[2, 2, 1] = p.s[w1[1], w2[1]]
