@@ -18,6 +18,7 @@ ArgCheck = "2.1"
 DataStructures = "0.18"
 Distributions = "0.23"
 JSON = "0.21"
+Memoize = "0.4"
 StatsFuns = "0.9"
 julia = "1"
 
