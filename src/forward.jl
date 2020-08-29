@@ -11,16 +11,14 @@ function forward!(dp::Array{Float64,3}, w1::String, w2::String, p::Phmm)
 
     for j = 1:(m+1), i = 1:(n+1)
         if i > 1 && j > 1 && (i, j) != (2, 2)
-            dp[i, j, 1] = logsumexp(dp[i-1, j-1, :] + p.lt[:, 1])
-            dp[i, j, 1] += p.lp[w1[i-1], w2[j-1]]
+            dp[i, j, 1] =
+                logsumexp(dp[i-1, j-1, :] + p.lt[:, 1]) + p.lp[w1[i-1], w2[j-1]]
         end
         if i > 1 && (i, j) != (2, 1)
-            dp[i, j, 2] = logsumexp(dp[i-1, j, :] + p.lt[:, 2])
-            dp[i, j, 2] += p.lq[w1[i-1]]
+            dp[i, j, 2] = logsumexp(dp[i-1, j, :] + p.lt[:, 2]) + p.lq[w1[i-1]]
         end
         if j > 1 && (i, j) != (1, 2)
-            dp[i, j, 3] = logsumexp(dp[i, j-1, :] + p.lt[:, 3])
-            dp[i, j, 3] += p.lq[w2[j-1]]
+            dp[i, j, 3] = logsumexp(dp[i, j-1, :] + p.lt[:, 3]) + p.lq[w2[j-1]]
         end
     end
     logsumexp(dp[n+1, m+1, :] + (p.τ))
