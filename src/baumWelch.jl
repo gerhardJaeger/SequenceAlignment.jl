@@ -10,7 +10,7 @@ mutable struct phmmExpectations
 end
 
 
-import Base:+
+import Base: +
 function (+)(a::phmmExpectations, b::phmmExpectations)
     @argcheck a.alphabet == b.alphabet
     phmmExpectations(
@@ -23,7 +23,7 @@ function (+)(a::phmmExpectations, b::phmmExpectations)
     )
 end
 
-function phmmExpectations(ph::Phmm, count::Float64=1.0)
+function phmmExpectations(ph::Phmm, count::Float64 = 1.0)
     nSymbols = length(ph.alphabet)
     phmmExpectations(
         ph.alphabet,
@@ -32,19 +32,19 @@ function phmmExpectations(ph::Phmm, count::Float64=1.0)
         ones(Float64, nSymbols, nSymbols) .* count,
         ones(Float64, nSymbols) .* count,
         [
-            1. 1. 1.
-            1. 1. 0.
-            1. 0. 1
+            1.0 1.0 1.0
+            1.0 1.0 0.0
+            1.0 0.0 1
         ] .* count,
     )
 end
 
 
 function Phmm(e::phmmExpectations)
-    transitions = zeros(Float64, 5,5)
-    transitions[1,2:4] = e.α
-    transitions[2:4,2:4] = e.tm
-    transitions[2:4,5] = e.τ
+    transitions = zeros(Float64, 4, 5)
+    transitions[1, 2:4] = e.α
+    transitions[2:4, 2:4] = e.tm
+    transitions[2:4, 5] = e.τ
 
     transitions[1, 3] =
         transitions[1, 4] = (transitions[1, 3] + transitions[1, 4]) / 2
@@ -59,81 +59,71 @@ function Phmm(e::phmmExpectations)
     transitions[3, 2] =
         transitions[4, 2] = (transitions[3, 2] + transitions[4, 2]) / 2
 
-    tn = mapslices(x -> x ./ sum(x), transitions, dims=2)
-    α = log.(tn[1,2:4])
-    τ = log.(tn[2:4,5])
-    lt = log.(tn[2:4, 2:4])
+    tn = mapslices(x -> x ./ sum(x), transitions, dims = 2)
+    lt = log.(tn)
 
+    lp = log.((e.p + e.p')/(2*sum(e.p)))
 
-    lp = Dict{Tuple{Char, Char}, Float64}()
-    for (i,s1) in enumerate(e.alphabet), (j, s2) in enumerate(e.alphabet)
-        lp[s1, s2] = log(e.p[i,j] + e.p[j,i]) - log(sum(e.p)) - log(2)
-    end
-    lp = DefaultDict(Float64(-Inf), lp)
-
-    lq = Dict{Char, Float64}()
-    for (i, s) in enumerate(e.alphabet)
-        lq[s] = log(e.q[i]) - log(sum(e.q))
-    end
-    lq = DefaultDict(Float64(-Inf), lq)
-    Phmm(e.alphabet, α, τ, lt, lp, lq)
+    lq = log.(e.q/sum(e.q))
+    Phmm(e.alphabet, lt, lp, lq)
 end
 
-function baumWelch(w1::String, w2::String, levP::Phmm)
+function baumWelch(w1::String, w2::String, ph::Phmm)
+    v1 = indexin(w1, ph.alphabet)
+    v2 = indexin(w2, ph.alphabet)
     n, m = length(w1), length(w2)
     fdp = zeros(Float64, n + 1, m + 1, 3)
     bdp = zeros(Float64, n + 1, m + 1, 3)
-    i1 = Vector{Int}(indexin(w1, levP.alphabet))
-    i2 = Vector{Int}(indexin(w2, levP.alphabet))
-    ll = SequenceAlignment.forward!(fdp, w1, w2, levP)
-    SequenceAlignment.backward!(bdp, w1, w2, levP)
-    nSymbols = length(levP.alphabet)
+    ll = SequenceAlignment.forward!(fdp, w1, w2, ph)
+    SequenceAlignment.backward!(bdp, w1, w2, ph)
+    nSymbols = length(ph.alphabet)
     expectedP = zeros(Float64, nSymbols, nSymbols)
     expectedQ = zeros(Float64, nSymbols)
     expectedT = zeros(Float64, 3, 3)
     expectedAlpha = zeros(Float64, 3)
     expectedTau = zeros(Float64, 3)
-    ev1 = exp(levP.α[1] + bdp[2, 2, 1] + levP.lp[w1[1], w2[1]] - ll)
+    ev1 = exp(ph.lt[1, 2] + bdp[2, 2, 1] + ph.lp[v1[1], v2[1]] - ll)
     expectedAlpha[1] += ev1
-    expectedP[i1[1], i2[1]] += ev1
-    ev1 = exp(levP.α[2] + bdp[2, 1, 2] + levP.lq[w1[1]] - ll)
+    expectedP[v1[1], v2[1]] += ev1
+    ev1 = exp(ph.lt[1, 3] + bdp[2, 1, 2] + ph.lq[v1[1]] - ll)
     expectedAlpha[2] += ev1
-    expectedQ[i1[1]] += ev1
-    ev1 = exp(levP.α[3] + bdp[1, 2, 3] + levP.lq[w2[1]] - ll)
+    expectedQ[v1[1]] += ev1
+    ev1 = exp(ph.lt[14] + bdp[1, 2, 3] + ph.lq[v2[1]] - ll)
     expectedAlpha[3] += ev1
-    expectedQ[i2[1]] += ev1
-    expectedTau = exp.(fdp[n+1, m+1, :] + levP.τ .- ll)
+    expectedQ[v2[1]] += ev1
+    expectedTau = exp.(fdp[n+1, m+1, :] + ph.lt[2:4, 5] .- ll)
     for j = 1:(m+1), i = 1:(n+1)
         if i > 1 && j > 1 && (i, j) != (2, 2)
             ev =
                 exp.(
-                    fdp[i-1, j-1, :] + levP.lt[:, 1] .+ bdp[i, j, 1] .+
-                    levP.lp[w1[i-1], w2[j-1]] .- ll,
+                    fdp[i-1, j-1, :] + ph.lt[2:4, 2] .+ bdp[i, j, 1] .+
+                    ph.lp[v1[i-1], v2[j-1]] .- ll,
                 )
             expectedT[:, 1] += ev
-            expectedP[i1[i-1], i2[j-1]] += sum(ev)
+            expectedP[v1[i-1], v2[j-1]] += sum(ev)
         end
         if i > 1 && (i, j) != (2, 1)
             ev =
                 exp.(
-                    fdp[i-1, j, :] + levP.lt[:, 2] .+ bdp[i, j, 2] .+
-                    levP.lq[w1[i-1]] .- ll,
+                    fdp[i-1, j, :] + ph.lt[2:4, 3] .+ bdp[i, j, 2] .+
+                    ph.lq[v1[i-1]] .- ll,
                 )
             expectedT[:, 2] += ev
-            expectedQ[i1[i-1]] += sum(ev)
+            expectedQ[v1[i-1]] += sum(ev)
         end
         if j > 1 && (i, j) != (1, 2)
             ev =
                 exp.(
-                    fdp[i, j-1, :] + levP.lt[:, 3] .+ bdp[i, j, 3] .+
-                    levP.lq[w2[j-1]] .- ll,
+                    fdp[i, j-1, :] + ph.lt[2:4, 4] .+ bdp[i, j, 3] .+
+                    ph.lq[v2[j-1]] .- ll,
                 )
             expectedT[:, 3] += ev
-            expectedQ[i2[j-1]] += sum(ev)
+            expectedQ[v2[j-1]] += sum(ev)
         end
     end
-    ll, phmmExpectations(
-        levP.alphabet,
+    ll,
+    phmmExpectations(
+        ph.alphabet,
         expectedAlpha,
         expectedTau,
         expectedP,
