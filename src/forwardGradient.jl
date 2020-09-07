@@ -56,6 +56,54 @@ function forwardD(
         dp[n+1, m+1, 3] + lt[4, 5],
     ])
 end
+#---
+
+function forwardD0(
+    v1::Vector{Int},
+    v2::Vector{Int},
+    lt::Matrix{Float64},
+    lp::Matrix{Float64},
+    lq::Vector{Float64},
+)
+    n, m = length(v1), length(v2)
+    dp = Dict{Tuple{Int,Int,Int},Float64}()
+    for k = 1:3, j = 1:(m+1), i = 1:(n+1)
+        dp[i, j, k] = -Inf
+    end
+    dp[2, 2, 1] = lt[1, 2]
+    dp[2, 1, 2] = lt[1, 3]
+    dp[1, 2, 3] = lt[1, 4]
+
+    for j = 1:(m+1), i = 1:(n+1)
+        if i > 1 && j > 1 && (i, j) != (2, 2)
+            dp[i, j, 1] =
+                mylogsumexp([
+                    dp[i-1, j-1, 1] + lt[2, 2],
+                    dp[i-1, j-1, 2] + lt[3, 2],
+                    dp[i-1, j-1, 3] + lt[4, 2],
+                ])
+        end
+        if i > 1 && (i, j) != (2, 1)
+            dp[i, j, 2] =
+                mylogsumexp([
+                    dp[i-1, j, 1] + lt[2, 3],
+                    dp[i-1, j, 2] + lt[3, 3],
+                ])
+        end
+        if j > 1 && (i, j) != (1, 2)
+            dp[i, j, 3] =
+                mylogsumexp([
+                    dp[i, j-1, 1] + lt[2, 4],
+                    dp[i, j-1, 3] + lt[4, 4],
+                ])
+        end
+    end
+    mylogsumexp([
+        dp[n+1, m+1, 1] + lt[2, 5],
+        dp[n+1, m+1, 2] + lt[3, 5],
+        dp[n+1, m+1, 3] + lt[4, 5],
+    ])
+end
 
 #---
 function auxArrays(nSymbols::Int)
@@ -141,4 +189,24 @@ function ∇forward(
         v1, v2,
         transformBack(x, pArr, pM)...),
         x)[1]
+end
+
+#---
+
+function ∇conditionalLL(
+    w1::String,
+    w2::String,
+    x::Vector{Float64},
+    alphabet::Vector{Char},
+    pArr::Matrix{Int},
+    pM::Matrix{Float64},
+)
+    v1 = Vector{Int}(indexin(w1, alphabet))
+    v2 = Vector{Int}(indexin(w2, alphabet))
+    gradient(
+        x ->
+            forwardD(v1, v2, transformBack(x, pArr, pM)...) -
+            forwardD0(v1, v2, transformBack(x, pArr, pM)...),
+        x,
+    )[1]
 end

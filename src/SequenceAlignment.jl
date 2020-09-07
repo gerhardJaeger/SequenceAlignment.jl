@@ -28,6 +28,7 @@ export viterbi
 include("forward.jl")
 export forward
 export forward0
+export conditionalLL
 
 include("backward.jl")
 export backward
@@ -48,6 +49,7 @@ export ∇forward
 export transformParameters
 export transformBack
 export auxArrays
+export ∇conditionalLL
 
 
 include("needlemanWunsch.jl")

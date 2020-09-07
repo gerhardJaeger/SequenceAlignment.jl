@@ -66,3 +66,9 @@ end
     dp = Array{Float64,3}(undef, n + 1, m + 1, 3)
     forward0!(dp, n, m, p)
 end
+
+#---
+
+function conditionalLL(w1::String, w2::String, p::Phmm)
+    forward(w1, w2, p) - forward0(length(w1), length(w2), p)
+end
