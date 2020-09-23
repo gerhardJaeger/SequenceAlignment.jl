@@ -1,8 +1,8 @@
 mutable struct NW
     alphabet::Vector{Char}
     s::Dict{Tuple{Char,Char},Float64}
-    gp1::Float64
-    gp2::Float64
+    gp1::Float64 # must be non-negative!
+    gp2::Float64 # must be non-negative!
 end
 
 
