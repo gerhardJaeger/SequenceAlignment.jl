@@ -90,7 +90,7 @@ end
 function nwAlign(w1::String, w2::String, p::NW)
     dp = Array{Float64,3}(undef, length(w1) + 1, length(w2) + 1, 3)
     pt = Array{Int,3}(undef, length(w1) + 1, length(w2) + 1, 3)
-    nw!(dp, pt, w1, w2, p)
+    nwAlign!(dp, pt, w1, w2, p)
 end
 
 #---
