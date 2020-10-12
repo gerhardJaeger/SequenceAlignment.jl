@@ -1,10 +1,10 @@
 function viterbi!(
     dp::Array{Float64,3},
     pt::Array{Int,3},
-    w1::String,
-    w2::String,
-    p::Phmm,
-)
+    w1::Union{AbstractString,T},
+    w2::Union{AbstractString,T},
+    p::Phmm{T},
+) where T
     @argcheck all([s ∈ p.alphabet for s in w1])
     @argcheck all([s ∈ p.alphabet for s in w2])
     v1 = indexin(w1, p.alphabet)
@@ -36,7 +36,7 @@ function viterbi!(
             dp[i, j, 3] += p.lq[v2[j-1]]
         end
     end
-    llMax, finalpt = findmax(dp[n+1, m+1, :] + (p.lt[2:4,5]))
+    llMax, finalpt = findmax(dp[n+1, m+1, :] + (p.lt[2:4, 5]))
     increments = [
         1 1
         1 0
@@ -47,16 +47,13 @@ function viterbi!(
         current = finalpt
         while current != -1
             pushfirst!(path, current)
-            (i, j, current) = (
-                i - increments[current, 1],
-                j - increments[current, 2],
-                pt[i, j, current],
-            )
+            (i, j, current) =
+                (i - increments[current, 1], j - increments[current, 2], pt[i, j, current])
         end
     end
 
-    a = eltype(w1)[]
-    b = eltype(w2)[]
+    a = Union{T,Missing}[]
+    b = Union{T,Missing}[]
     let (i, j) = (1, 1)
         for x in path
             if x == 1
@@ -67,18 +64,22 @@ function viterbi!(
             elseif x == 2
                 push!(a, w1[i])
                 i += 1
-                push!(b, '-')
+                push!(b, missing)
             else
-                push!(a, '-')
+                push!(a, missing)
                 push!(b, w2[j])
                 j += 1
             end
         end
     end
-    return (alignment = [a b]::Matrix{Char}, logprob = llMax::Float64)
+    return (alignment = [a b]::Matrix{Union{T,Missing}}, logprob = llMax::Float64)
 end
 
-function viterbi(w1::String, w2::String, p::Phmm)
+function viterbi(
+    w1::Union{AbstractString, T},
+    w2::Union{AbstractString, T},
+    p::Phmm{T}
+) where {T}
     dp = Array{Float64,3}(undef, length(w1) + 1, length(w2) + 1, 3)
     pt = Array{Int,3}(undef, length(w1) + 1, length(w2) + 1, 3)
     viterbi!(dp, pt, w1, w2, p)

@@ -1,6 +1,6 @@
-mutable struct NW
-    alphabet::Vector{Char}
-    s::Dict{Tuple{Char,Char},Float64}
+mutable struct NW{T}
+    alphabet::Vector{T}
+    s::Dict{Tuple{T,T},Float64}
     gp1::Float64 # must be non-negative!
     gp2::Float64 # must be non-negative!
 end
@@ -9,10 +9,10 @@ end
 function nwAlign!(
     dp::Array{Float64,3},
     pt::Array{Int,3},
-    w1::String,
-    w2::String,
-    p::NW,
-)
+    w1::Union{AbstractString, Vector{T}},
+    w2::Union{AbstractString, Vector{T}},
+    p::NW{T},
+) where {T}
     @argcheck all([s ∈ p.alphabet for s in w1])
     @argcheck all([s ∈ p.alphabet for s in w2])
     n, m = length(w1), length(w2)
@@ -62,8 +62,8 @@ function nwAlign!(
         end
     end
 
-    a = eltype(w1)[]
-    b = eltype(w2)[]
+    a = Union{T, Missing}[]
+    b = Union{T, Missing}[]
     let (i, j) = (1, 1)
         for x in path
             if x == 1
@@ -74,20 +74,24 @@ function nwAlign!(
             elseif x == 2
                 push!(a, w1[i])
                 i += 1
-                push!(b, '-')
+                push!(b, missing)
             else
-                push!(a, '-')
+                push!(a, missing)
                 push!(b, w2[j])
                 j += 1
             end
         end
     end
-    return (alignment = [a b]::Matrix{Char}, score = llMax::Float64)
+    return (alignment = [a b]::Matrix{Union{Missing, T}}, score = llMax::Float64)
 end
 
 #---
 
-function nwAlign(w1::String, w2::String, p::NW)
+function nwAlign(
+    w1::Union{AbstractString, Vector{T}},
+    w2::Union{AbstractString, Vector{T}},
+    p::NW{T},
+) where {T}
     dp = Array{Float64,3}(undef, length(w1) + 1, length(w2) + 1, 3)
     pt = Array{Int,3}(undef, length(w1) + 1, length(w2) + 1, 3)
     nwAlign!(dp, pt, w1, w2, p)
@@ -97,8 +101,8 @@ end
 
 function nw!(
     dp::Array{Float64,3},
-    w1::String,
-    w2::String,
+    w1::Union{AbstractString, Vector},
+    w2::Union{AbstractString, Vector},
     p::NW,
 )
     @argcheck all([s ∈ p.alphabet for s in w1])
@@ -129,7 +133,11 @@ function nw!(
     maximum(dp[n+1, m+1, :])
 end
 
-function nw(w1::String, w2::String, p::NW)
+function nw(
+    w1::Union{AbstractString, Vector{T}},
+    w2::Union{AbstractString, Vector{T}},
+    p::NW{T}
+) where {T}
     dp = Array{Float64,3}(undef, length(w1) + 1, length(w2) + 1, 3)
     nw!(dp, w1, w2, p)
 end

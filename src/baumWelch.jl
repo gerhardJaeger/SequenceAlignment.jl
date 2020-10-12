@@ -1,7 +1,7 @@
 
 
-mutable struct phmmExpectations
-    alphabet::Vector{Char}
+mutable struct phmmExpectations{T}
+    alphabet::Vector{T}
     α::Vector{Float64}
     τ::Vector{Float64}
     p::Matrix{Float64}
@@ -11,7 +11,7 @@ end
 
 
 import Base: +
-function (+)(a::phmmExpectations, b::phmmExpectations)
+function (+)(a::phmmExpectations{T}, b::phmmExpectations{T}) where T
     @argcheck a.alphabet == b.alphabet
     phmmExpectations(
         a.alphabet,
@@ -23,9 +23,9 @@ function (+)(a::phmmExpectations, b::phmmExpectations)
     )
 end
 
-function phmmExpectations(ph::Phmm, count::Float64 = 1.0)
+function phmmExpectations(ph::Phmm{T}, count::Float64 = 1.0) where T
     nSymbols = length(ph.alphabet)
-    phmmExpectations(
+    phmmExpectations{T}(
         ph.alphabet,
         ones(Float64, 3) .* count,
         ones(Float64, 3) .* count,
@@ -40,7 +40,7 @@ function phmmExpectations(ph::Phmm, count::Float64 = 1.0)
 end
 
 
-function Phmm(e::phmmExpectations)
+function Phmm(e::phmmExpectations{T}) where T
     transitions = zeros(Float64, 4, 5)
     transitions[1, 2:4] = e.α
     transitions[2:4, 2:4] = e.tm
@@ -65,10 +65,14 @@ function Phmm(e::phmmExpectations)
     lp = log.((e.p + e.p')/(2*sum(e.p)))
 
     lq = log.(e.q/sum(e.q))
-    Phmm(e.alphabet, lt, lp, lq)
+    Phmm{T}(e.alphabet, lt, lp, lq)
 end
 
-function baumWelch(w1::String, w2::String, ph::Phmm)
+function baumWelch(
+    w1::Union{Vector{T}, AbstractString},
+    w2::Union{Vector{T}, AbstractString},
+    ph::Phmm{T}
+) where T
     v1 = indexin(w1, ph.alphabet)
     v2 = indexin(w2, ph.alphabet)
     n, m = length(w1), length(w2)

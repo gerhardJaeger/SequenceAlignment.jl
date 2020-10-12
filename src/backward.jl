@@ -1,4 +1,9 @@
-function backward!(dp::Array{Float64,3}, w1::String, w2::String, p::Phmm)
+function backward!(
+    dp::Array{Float64,3},
+    w1::Union{Vector{T}, AbstractString},
+    w2::Union{Vector{T}, AbstractString},
+    p::Phmm{T}
+) where T
     n, m = length(w1), length(w2)
     v1 = indexin(w1, p.alphabet)
     v2 = indexin(w2, p.alphabet)
@@ -35,7 +40,11 @@ function backward!(dp::Array{Float64,3}, w1::String, w2::String, p::Phmm)
 end
 
 
-function backward(w1::String, w2::String, p::Phmm)
+function backward(
+    w1::Union{Vector{T}, AbstractString},
+    w2::Union{Vector{T}, AbstractString},
+    p::Phmm{T}
+) where T
     dp = Array{Float64,3}(undef, length(w1) + 1, length(w2) + 1, 3)
     backward!(dp, w1, w2, p)
 end

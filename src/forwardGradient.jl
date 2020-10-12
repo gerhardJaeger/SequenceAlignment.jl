@@ -176,13 +176,13 @@ end
 #---
 
 function ∇forward(
-    w1::String,
-    w2::String,
+    w1::Union{Vector{T}, AbstractString},
+    w2::Union{Vector{T}, AbstractString},
     x::Vector{Float64},
     alphabet::Vector{Char},
     pArr::Matrix{Int},
     pM::Matrix{Float64},
-)
+) where T
     v1 = Vector{Int}(indexin(w1, alphabet))
     v2 = Vector{Int}(indexin(w2, alphabet))
     gradient(x -> forwardD(
@@ -194,13 +194,13 @@ end
 #---
 
 function ∇conditionalLL(
-    w1::String,
-    w2::String,
+    w1::Union{Vector{T}, AbstractString},
+    w2::Union{Vector{T}, AbstractString},
     x::Vector{Float64},
-    alphabet::Vector{Char},
+    alphabet::Vector{T},
     pArr::Matrix{Int},
     pM::Matrix{Float64},
-)
+) where T
     v1 = Vector{Int}(indexin(w1, alphabet))
     v2 = Vector{Int}(indexin(w2, alphabet))
     gradient(

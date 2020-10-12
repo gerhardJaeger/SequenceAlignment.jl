@@ -1,11 +1,11 @@
-mutable struct Phmm # all probabilities are log-transformed
-    alphabet::Vector{Char}
+mutable struct Phmm{T} # all probabilities are log-transformed
+    alphabet::Vector{T}
     lt::Matrix{Float64} # transition matrix
     lp::Matrix{Float64} # emission probs in state M
     lq::Vector{Float64} # emission probs in states X, Y
     Phmm(alphabet, lt, lp, lq) =
         assert_phmm(alphabet, lt, lp, lq) &&
-        new(alphabet, lt, lp, lq)
+        new{T}(alphabet, lt, lp, lq)
 end
 
 
@@ -22,14 +22,21 @@ function assert_phmm(alphabet, lt, lp, lq)
     return true
 end
 
-function Phmm(alphabet, δ, ϵ, τ, lp, lq)
+function Phmm(
+    alphabet::Vector{T},
+    δ::Float64,
+    ϵ::Float64,
+    τ::Float64,
+    lp::Matrix{Float64},
+    lq::Vector{Float64},
+) where {T}
     lt = log.([
         0 1-2δ-τ δ δ τ
         0 1-2δ-τ δ δ τ
         0 1-ϵ-τ ϵ 0 τ
         0 1-ϵ-τ 0 ϵ τ
     ])
-    Phmm(alphabet, lt, lp, lq)
+    Phmm{T}(alphabet, lt, lp, lq)
 end
 
 import Base:print
@@ -75,7 +82,7 @@ end
 
 
 
-function randomPhmm(alphabet::Vector{Char})
+function randomPhmm(alphabet::Vector{T}) where {T}
     nSymbols = length(alphabet)
     pr = reshape(rand(Dirichlet(nSymbols^2, 1)), (nSymbols, nSymbols))
     pr = (pr .+ pr') / 2
@@ -90,10 +97,10 @@ function randomPhmm(alphabet::Vector{Char})
     tm[3,:] = [0, a*(1-τ), b*(1-τ), 0, τ]
     tm[4,:] = tm[3,[1,2,4,3,5]]
     lt = log.(tm)
-    Phmm(alphabet, lt, lp, lq)
+    Phmm{T}(alphabet, lt, lp, lq)
 end
 
-function uniformPhmm(alphabet::Vector{Char})
+function uniformPhmm(alphabet::Vector{T}) where {T}
     nSymbols = length(alphabet)
     pr = ones(nSymbols, nSymbols) ./ (nSymbols^2)
     qr = ones(nSymbols) ./ nSymbols
@@ -106,7 +113,7 @@ function uniformPhmm(alphabet::Vector{Char})
         0 3/8 0   3/8 1/4
     ]
     lt = log.(tm)
-    Phmm(alphabet, lt, lp, lq)
+    Phmm{T}(alphabet, lt, lp, lq)
 end
 
 function copy(a::Phmm)

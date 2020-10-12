@@ -1,8 +1,13 @@
-function forward!(dp::Array{Float64,3}, w1::String, w2::String, p::Phmm)
-#    @argcheck all([s ∈ p.alphabet for s in w1])
-#    @argcheck all([s ∈ p.alphabet for s in w2])
+function forward!(
+    dp::Array{Float64,3},
+    w1::Union{Vector{T}, AbstractString},
+    w2::Union{Vector{T}, AbstractString},
+    p::Phmm{T}
+) where T
+    @argcheck all([s ∈ p.alphabet for s in w1])
+    @argcheck all([s ∈ p.alphabet for s in w2])
     n, m = length(w1), length(w2)
-#    @argcheck size(dp) <= (n + 1, m + 1, 3)
+    @argcheck size(dp) <= (n + 1, m + 1, 3)
     fill!(dp, -Inf)
     v1 = indexin(w1, p.alphabet)
     v2 = indexin(w2, p.alphabet)
@@ -31,7 +36,11 @@ function forward!(dp::Array{Float64,3}, w1::String, w2::String, p::Phmm)
     logsumexp([dp[n+1, m+1, k] + p.lt[k+1, 5] for k in 1:3])
 end
 
-function forward(w1::String, w2::String, p::Phmm)
+function forward(
+    w1::Union{Vector{T}, AbstractString},
+    w2::Union{Vector{T}, AbstractString},
+    p::Phmm{T}
+) where T
     n,m = length.([w1, w2])
     dp = Array{Float64,3}(undef, n + 1, m + 1, 3)
     forward!(dp, w1, w2, p)
@@ -40,7 +49,12 @@ end
 
 #---
 
-function forward0!(dp::Array{Float64,3}, n::Int, m::Int, p::Phmm)
+function forward0!(
+    dp::Array{Float64,3},
+    n::Int,
+    m::Int,
+    p::Phmm
+)
     @argcheck size(dp) <= (n + 1, m + 1, 3)
     fill!(dp, -Inf)
 
@@ -69,6 +83,10 @@ end
 
 #---
 
-function conditionalLL(w1::String, w2::String, p::Phmm)
+function conditionalLL(
+    w1::Union{Vector{T}, AbstractString},
+    w2::Union{Vector{T}, AbstractString},
+    p::Phmm{T}
+) where T
     forward(w1, w2, p) - forward0(length(w1), length(w2), p)
 end
