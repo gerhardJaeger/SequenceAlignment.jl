@@ -1,6 +1,3 @@
-#__precompile__(true)
-
-
 module SequenceAlignment
 
 using ArgCheck

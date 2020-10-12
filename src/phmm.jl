@@ -1,11 +1,11 @@
-mutable struct Phmm{T} # all probabilities are log-transformed
-    alphabet::Vector{T}
+mutable struct Phmm # all probabilities are log-transformed
+    alphabet::Vector
     lt::Matrix{Float64} # transition matrix
     lp::Matrix{Float64} # emission probs in state M
     lq::Vector{Float64} # emission probs in states X, Y
     Phmm(alphabet, lt, lp, lq) =
         assert_phmm(alphabet, lt, lp, lq) &&
-        new{T}(alphabet, lt, lp, lq)
+        new(alphabet, lt, lp, lq)
 end
 
 
@@ -97,7 +97,7 @@ function randomPhmm(alphabet::Vector{T}) where {T}
     tm[3,:] = [0, a*(1-τ), b*(1-τ), 0, τ]
     tm[4,:] = tm[3,[1,2,4,3,5]]
     lt = log.(tm)
-    Phmm{T}(alphabet, lt, lp, lq)
+    Phmm(alphabet, lt, lp, lq)
 end
 
 function uniformPhmm(alphabet::Vector{T}) where {T}
