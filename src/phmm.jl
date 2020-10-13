@@ -62,7 +62,7 @@ function read(fn::AbstractString, ::Type{Phmm})
     lp = Matrix{Float64}(hcat(j["lp"]...))
     lq = Vector{Float64}(j["lq"])
     lt = convert(Matrix{Float64}, hcat(replace.(j["lt"], nothing => -Inf)...))
-    Phmm(alphabet, lt, lp, lq)
+    Phmm{eltype(alphabet)}(alphabet, lt, lp, lq)
 end
 
 
