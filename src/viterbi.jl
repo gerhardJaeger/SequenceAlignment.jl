@@ -72,7 +72,7 @@ function viterbi!(
             end
         end
     end
-    return (alignment = [a b]::Matrix{Union{T,Missing}}, logprob = llMax::Float64)
+    return (alignment = [a b], logprob = llMax::Float64)
 end
 
 function viterbi(
