@@ -48,7 +48,7 @@ function levenshteinAlign(s1::T, s2::T) where {T<:Union{AbstractString,Vector}}
     hcat(a1, a2)
 end
 
-
+##
 @doc raw"""
 `levenshteinDistance` computes the edit distance between two iterables
 (abstract string or vector)
@@ -57,21 +57,22 @@ function levenshteinDistance(
     s1::T,
     s2::T,
 ) where {T<:Union{AbstractString,Vector}}
-    n, m = length.([s1, s2])
+    n::Int = length(s1)
+    m::Int = length(s2)
     dp = Matrix{Int}(undef, n + 1, m + 1)
-    dp[:, 1] .= 0:n
-    dp[1, :] .= 0:m
-    for i = 1:m
-        for j = 1:n
-            insrt = dp[j, i+1] + 1
-            dlt = dp[j+1, i] + 1
-            mtch = dp[j, i] + (s1[j] != s2[i])
-            states = [mtch, insrt, dlt]
-            dp[j+1, i+1] = minimum(states)
-        end
+    dp[1:end, 1] .= 0:n
+    dp[1, 1:end] .= 0:m
+    for i = 1:m, j = 1:n
+        insrt = dp[j, i+1] + 1
+        dlt = dp[j+1, i] + 1
+        mtch = dp[j, i] + (s1[j] != s2[i])
+        states = [mtch, insrt, dlt]
+        dp[j+1, i+1]::Int = minimum(states)
     end
     dp[end, end]
 end
+
+##
 
 @doc raw"""
 `ldn` computes the normalized edit distance between two iterables
