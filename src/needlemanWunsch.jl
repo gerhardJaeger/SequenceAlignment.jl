@@ -82,7 +82,7 @@ function nwAlign!(
             end
         end
     end
-    return (alignment = [a b]::Matrix{Union{Missing, T}}, score = llMax::Float64)
+    return (alignment = convert(Matrix{Union{Missing, T}},[a b]), score = llMax::Float64)
 end
 
 #---
