@@ -55,10 +55,12 @@ function write(fn::AbstractString, ph::Phmm)
     write(fn, json(ph, 1))
 end
 
+
+# TODO: returns from type of Phmm
 function read(fn::AbstractString, ::Type{Phmm})
     s = read(fn, String)
     j = JSON.Parser.parse(s)
-    alphabet = first.(j["alphabet"])
+    alphabet = j["alphabet"]
     lp = Matrix{Float64}(hcat(j["lp"]...))
     lq = Vector{Float64}(j["lq"])
     lt = convert(Matrix{Float64}, hcat(replace.(j["lt"], nothing => -Inf)...))
@@ -115,6 +117,29 @@ function uniformPhmm(alphabet::Vector{T}) where {T}
     lt = log.(tm)
     Phmm{T}(alphabet, lt, lp, lq)
 end
+
+
+function levPhmm(alphabet::Vector{T}) where {T}
+    nSymbols = length(alphabet)
+    pr = ones(nSymbols, nSymbols)
+    for i in 1:nSymbols
+        pr[i,i] += nSymbols
+    end
+    pr /= sum(pr)
+    qr = ones(nSymbols) ./ nSymbols
+    lp = log.(pr)
+    lq = log.(qr)
+    tm = [
+        0 1/4 1/4 1/4 1/4
+        0 1/4 1/4 1/4 1/4
+        0 3/8 3/8 0 1/4
+        0 3/8 0 3/8 1/4
+    ]
+    lt = log.(tm)
+    Phmm{T}(alphabet, lt, lp, lq)
+end
+
+
 
 function copy(a::Phmm)
     Phmm(

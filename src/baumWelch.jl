@@ -69,8 +69,8 @@ function Phmm(e::phmmExpectations{T}) where T
 end
 
 function baumWelch(
-    w1::Union{Vector{T}, AbstractString},
-    w2::Union{Vector{T}, AbstractString},
+    w1::Vector{T},
+    w2::Vector{T},
     ph::Phmm{T}
 ) where T
     v1 = indexin(w1, ph.alphabet)

@@ -1,9 +1,11 @@
 module SequenceAlignment
 
+
 using ArgCheck
 using Distributions
 using LinearAlgebra
 using StatsFuns
+import StatsFuns: logsumexp
 using DataStructures
 using JSON
 using Memoize

@@ -1,7 +1,7 @@
 function backward!(
     dp::Array{Float64,3},
-    w1::Union{Vector{T}, AbstractString},
-    w2::Union{Vector{T}, AbstractString},
+    w1::Vector{T},
+    w2::Vector{T},
     p::Phmm{T}
 ) where T
     n, m = length(w1), length(w2)
@@ -31,18 +31,18 @@ function backward!(
             end
         end
     end
-    logProb = logsumexp([
-        dp[2, 2, 1] + p.lt[1,2] + p.lp[v1[1], v2[1]],
-        dp[2, 1, 2] + p.lt[1,3] + p.lq[v1[1]],
-        dp[1, 2, 3] + p.lt[1,4] + p.lq[v2[1]],
+    logProb = StatsFuns.logsumexp([
+        dp[2, 2, 1] + p.lt[1, 2] + p.lp[v1[1], v2[1]],
+        dp[2, 1, 2] + p.lt[1, 3] + p.lq[v1[1]],
+        dp[1, 2, 3] + p.lt[1, 4] + p.lq[v2[1]],
     ])
 
 end
 
 
 function backward(
-    w1::Union{Vector{T}, AbstractString},
-    w2::Union{Vector{T}, AbstractString},
+    w1::Vector{T},
+    w2::Vector{T},
     p::Phmm{T}
 ) where T
     dp = Array{Float64,3}(undef, length(w1) + 1, length(w2) + 1, 3)

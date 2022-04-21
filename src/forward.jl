@@ -1,7 +1,7 @@
 function forward!(
     dp::Array{Float64,3},
-    w1::Union{Vector{T}, AbstractString},
-    w2::Union{Vector{T}, AbstractString},
+    w1::Vector{T},
+    w2::Vector{T},
     p::Phmm{T}
 ) where T
     @argcheck all([s ∈ p.alphabet for s in w1])
@@ -19,26 +19,26 @@ function forward!(
     for j = 1:(m+1), i = 1:(n+1)
         if i > 1 && j > 1 && (i, j) != (2, 2)
             dp[i, j, 1] =
-                logsumexp([dp[i-1, j-1, k] + p.lt[k+1, 2]
+                StatsFuns.logsumexp([dp[i-1, j-1, k] + p.lt[k+1, 2]
                             for k = 1:3]) + p.lp[v1[i-1], v2[j-1]]
         end
         if i > 1 && (i, j) != (2, 1)
             dp[i, j, 2] =
-                logsumexp([dp[i-1, j, k] + p.lt[k+1, 3]
-                            for k = 1:3]) + p.lq[v1[i-1]]
+                StatsFuns.logsumexp([dp[i-1, j, k] + p.lt[k+1, 3]
+                                     for k = 1:3]) + p.lq[v1[i-1]]
         end
         if j > 1 && (i, j) != (1, 2)
             dp[i, j, 3] =
-                logsumexp([dp[i, j-1, k] + p.lt[k+1, 4]
-                            for k = 1:3]) + p.lq[v2[j-1]]
+                StatsFuns.logsumexp([dp[i, j-1, k] + p.lt[k+1, 4]
+                                     for k = 1:3]) + p.lq[v2[j-1]]
         end
     end
-    logsumexp([dp[n+1, m+1, k] + p.lt[k+1, 5] for k in 1:3])
+    StatsFuns.logsumexp([dp[n+1, m+1, k] + p.lt[k+1, 5] for k in 1:3])
 end
 
 function forward(
-    w1::Union{Vector{T}, AbstractString},
-    w2::Union{Vector{T}, AbstractString},
+    w1::Vector{T},
+    w2::Vector{T},
     p::Phmm{T}
 ) where T
     n,m = length.([w1, w2])
@@ -64,10 +64,10 @@ function forward0!(
 
     for j = 1:(m+1), i = 1:(n+1)
         if i > 1 && j > 1 && (i, j) != (2, 2)
-            dp[i, j, 1] = logsumexp(dp[i-1, j-1, :] + p.lt[2:4, 2])
+            dp[i, j, 1] = StatsFuns.logsumexp(dp[i-1, j-1, :] + p.lt[2:4, 2])
         end
         if i > 1 && (i, j) != (2, 1)
-            dp[i, j, 2] = logsumexp(dp[i-1, j, :] + p.lt[2:4, 3])
+            dp[i, j, 2] = StatsFuns.logsumexp(dp[i-1, j, :] + p.lt[2:4, 3])
         end
         if j > 1 && (i, j) != (1, 2)
             dp[i, j, 3] = logsumexp(dp[i, j-1, :] + p.lt[2:4, 4])

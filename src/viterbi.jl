@@ -1,8 +1,8 @@
 function viterbi!(
     dp::Array{Float64,3},
     pt::Array{Int,3},
-    w1::Union{AbstractString,T},
-    w2::Union{AbstractString,T},
+    w1::Vector{T},
+    w2::Vector{T},
     p::Phmm{T},
 ) where T
     @argcheck all([s ∈ p.alphabet for s in w1])
@@ -76,8 +76,8 @@ function viterbi!(
 end
 
 function viterbi(
-    w1::Union{AbstractString, T},
-    w2::Union{AbstractString, T},
+    w1::Vector{T},
+    w2::Vector{T},
     p::Phmm{T}
 ) where {T}
     dp = Array{Float64,3}(undef, length(w1) + 1, length(w2) + 1, 3)
